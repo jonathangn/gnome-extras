@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist>
+
+  <schema id="org.gnome.shell.extensions.terminal-theme-sync"
+          path="/org/gnome/shell/extensions/terminal-theme-sync/">
+
+    <key name="sync-enabled" type="b">
+      <default>true</default>
+      <summary>Sync terminal colors</summary>
+      <description>
+        Whether GNOME Terminal colors follow the system light or dark color
+        scheme. Turning this off restores the colors that were in use before
+        the extension changed them.
+      </description>
+    </key>
+
+    <key name="apply-to-all-profiles" type="b">
+      <default>false</default>
+      <summary>Apply to all profiles</summary>
+      <description>
+        If true, every GNOME Terminal profile is kept in sync. If false, only
+        the default profile is managed.
+      </description>
+    </key>
+
+    <key name="sync-palette" type="b">
+      <default>false</default>
+      <summary>Also switch the 16-color palette</summary>
+      <description>
+        If true, the terminal's 16 ANSI palette colors are switched together
+        with the background and text colors. Disable this to keep your custom
+        palette untouched.
+      </description>
+    </key>
+
+    <key name="light-background" type="s">
+      <default>'rgb(255,255,255)'</default>
+      <summary>Light theme background color</summary>
+      <description>
+        Background color used when the system prefers a light theme. The
+        default matches GNOME Terminal's built-in "GNOME light" scheme.
+      </description>
+    </key>
+
+    <key name="light-foreground" type="s">
+      <default>'rgb(30,30,30)'</default>
+      <summary>Light theme text color</summary>
+      <description>
+        Text color used when the system prefers a light theme. The default
+        matches GNOME Terminal's built-in "GNOME light" scheme.
+      </description>
+    </key>
+
+    <key name="dark-background" type="s">
+      <default>'rgb(30,30,30)'</default>
+      <summary>Dark theme background color</summary>
+      <description>
+        Background color used when the system prefers a dark theme. The
+        default matches GNOME Terminal's built-in "GNOME dark" scheme.
+      </description>
+    </key>
+
+    <key name="dark-foreground" type="s">
+      <default>'rgb(207,207,207)'</default>
+      <summary>Dark theme text color</summary>
+      <description>
+        Text color used when the system prefers a dark theme. The default
+        matches GNOME Terminal's built-in "GNOME dark" scheme.
+      </description>
+    </key>
+
+    <key name="original-colors" type="s">
+      <default>'{}'</default>
+      <summary>Saved original profile colors</summary>
+      <description>
+        Internal state. JSON object mapping profile UUIDs to the terminal
+        colors that were in use before this extension changed them.
+      </description>
+    </key>
+
+    <key name="last-applied" type="s">
+      <default>'{}'</default>
+      <summary>Last applied profile colors</summary>
+      <description>
+        Internal state. JSON object mapping profile UUIDs to the values this
+        extension last wrote, so user changes can be detected when restoring.
+      </description>
+    </key>
+
+  </schema>
+
+</schemalist>
