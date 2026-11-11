@@ -3,11 +3,16 @@
 This document describes how to publish Terminal Theme Sync on GitHub and
 extensions.gnome.org (EGO).
 
+The extension lives in the `terminal-theme-sync/` subdirectory of the
+`gnome-extras` repository. Git commands run from the repository root; build
+commands run from `terminal-theme-sync/` (or with `make -C`).
+
 ## 1. Before publishing
 
 Run the checks and build the zip:
 
 ```bash
+cd terminal-theme-sync
 make check
 make test
 make pack
@@ -34,12 +39,10 @@ The repository is expected at:
 <https://github.com/jonathangn/gnome-extras>
 
 Create it on GitHub as an empty public repository (no README, no license, no
-`.gitignore`). Then, from this directory:
+`.gitignore`). The local repository is already initialized and committed, so
+from the repository root:
 
 ```bash
-git init -b main
-git add .
-git commit -m "Initial release"
 git remote add origin git@github.com:jonathangn/gnome-extras.git
 git push -u origin main
 ```
@@ -51,9 +54,11 @@ git remote add origin https://github.com/jonathangn/gnome-extras.git
 ```
 
 Do not commit `dist/`, `schemas/gschemas.compiled` or `*.zip`; they are listed
-in `.gitignore`.
+in `terminal-theme-sync/.gitignore`.
 
 ## 3. Create a release
+
+From the repository root:
 
 ```bash
 git tag -a v1.0.0 -m "Terminal Theme Sync 1.0.0"
@@ -63,7 +68,7 @@ git push origin v1.0.0
 On GitHub, create a release from the tag and attach:
 
 ```text
-dist/terminal-theme-sync@jonathangn.github.io.shell-extension.zip
+terminal-theme-sync/dist/terminal-theme-sync@jonathangn.github.io.shell-extension.zip
 ```
 
 The README links to the releases page, so the zip can be installed with
@@ -73,7 +78,8 @@ The README links to the releases page, so the zip can be installed with
 
 1. Create an account on <https://extensions.gnome.org> and log in.
 2. Open <https://extensions.gnome.org/upload/>.
-3. Upload `dist/terminal-theme-sync@jonathangn.github.io.shell-extension.zip`.
+3. Upload
+   `terminal-theme-sync/dist/terminal-theme-sync@jonathangn.github.io.shell-extension.zip`.
 4. Fill in the listing:
    - **Name**: Terminal Theme Sync
    - **Description**: keep it close to `metadata.json`; explain that GNOME
@@ -98,9 +104,9 @@ reasons for rejection to avoid:
 ## 5. Publishing updates
 
 1. Bump `version` (integer) and `version-name` (human-readable string) in
-   `metadata.json`.
-2. Add an entry to `CHANGELOG.md`.
-3. Run `make check test pack`.
+   `terminal-theme-sync/metadata.json`.
+2. Add an entry to `terminal-theme-sync/CHANGELOG.md`.
+3. Run `make -C terminal-theme-sync check test pack`.
 4. Tag the release (`v1.0.1`, …), attach the new zip to the GitHub release.
 5. Upload the new zip on EGO. EGO requires each upload to have a higher
    `version` than the previous one.
