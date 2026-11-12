@@ -37,8 +37,8 @@ These are the colors written to the terminal profile:
 
 | Scheme | Background | Text | GNOME Terminal scheme |
 | --- | --- | --- | --- |
-| Light | `#ffffff` | `#1e1e1e` | GNOME light |
-| Dark | `#1e1e1e` | `#cfcfcf` | GNOME dark |
+| Light | `#ffffff` | `#171421` | GNOME light |
+| Dark | `#171421` | `#d0cfcc` | GNOME dark |
 
 GNOME Terminal does not store a scheme name. It recognizes a built-in scheme
 by comparing the profile's foreground/background pair, so these exact values
@@ -174,8 +174,8 @@ make pack         # build dist/*.shell-extension.zip
 make check        # validate metadata and compile the schema
 ```
 
-The test suite uses throw-away terminal profile paths, so it does not touch
-your real terminal configuration:
+The test suite runs with the GSettings memory backend, so it does not touch
+your real terminal configuration or the installed extension's settings:
 
 ```bash
 gjs -m tests/test-terminal-sync.js

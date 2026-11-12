@@ -2,11 +2,13 @@
 //
 // Run with: gjs -m tests/test-terminal-sync.js
 //
-// The test uses throw-away GNOME Terminal profile paths that are not listed
-// in ProfilesList, so the real terminal configuration is never touched.
+// The test uses the GSettings memory backend, so it never reads or writes the
+// real terminal configuration or the installed extension's settings.
 
 import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
+
+GLib.setenv('GSETTINGS_BACKEND', 'memory', true);
 
 import {
     TerminalThemeSync,
@@ -15,7 +17,6 @@ import {
 } from '../terminalSync.js';
 
 const PROFILE_SCHEMA_ID = 'org.gnome.Terminal.Legacy.Profile';
-const SETTINGS_PATH = '/org/gnome/shell/extensions/terminal-theme-sync/';
 const PROFILE_PATH_PREFIX = '/org/gnome/terminal/legacy/profiles:/:';
 const TEST_UUID_1 = 'terminal-theme-sync-test-1';
 const TEST_UUID_2 = 'terminal-theme-sync-test-2';
@@ -49,14 +50,6 @@ function run(command) {
     if (!ok) {
         const error = new TextDecoder().decode(stderr);
         throw new Error(`Command failed (${command.join(' ')}): ${error}`);
-    }
-}
-
-function resetDconf(path) {
-    try {
-        run(['dconf', 'reset', '-f', path]);
-    } catch {
-        // Path may not exist yet.
     }
 }
 
@@ -127,10 +120,6 @@ function originalColors(settings, uuid) {
 }
 
 function main() {
-    resetDconf(SETTINGS_PATH);
-    resetDconf(`${PROFILE_PATH_PREFIX}${TEST_UUID_1}/`);
-    resetDconf(`${PROFILE_PATH_PREFIX}${TEST_UUID_2}/`);
-
     run(['glib-compile-schemas', '--strict',
         GLib.build_filenamev([projectDir, 'schemas'])]);
 
@@ -139,11 +128,11 @@ function main() {
     check(settings.get_default_value('light-background').unpack(),
         'rgb(255,255,255)', 'default light background matches GNOME light');
     check(settings.get_default_value('light-foreground').unpack(),
-        'rgb(30,30,30)', 'default light text matches GNOME light');
+        'rgb(23,20,33)', 'default light text matches GNOME light');
     check(settings.get_default_value('dark-background').unpack(),
-        'rgb(30,30,30)', 'default dark background matches GNOME dark');
+        'rgb(23,20,33)', 'default dark background matches GNOME dark');
     check(settings.get_default_value('dark-foreground').unpack(),
-        'rgb(207,207,207)', 'default dark text matches GNOME dark');
+        'rgb(208,207,204)', 'default dark text matches GNOME dark');
 
     const metadata = JSON.parse(new TextDecoder().decode(
         GLib.file_get_contents(GLib.build_filenamev(
@@ -244,14 +233,14 @@ function main() {
     sync.apply();
     check(one.profile.get_string('background-color'), 'rgb(255,255,255)',
         'defaults apply the GNOME light background');
-    check(one.profile.get_string('foreground-color'), 'rgb(30,30,30)',
+    check(one.profile.get_string('foreground-color'), 'rgb(23,20,33)',
         'defaults apply the GNOME light text color');
 
     fakeInterface.value = 'prefer-dark';
     fakeInterface.emit();
-    check(one.profile.get_string('background-color'), 'rgb(30,30,30)',
+    check(one.profile.get_string('background-color'), 'rgb(23,20,33)',
         'defaults apply the GNOME dark background');
-    check(one.profile.get_string('foreground-color'), 'rgb(207,207,207)',
+    check(one.profile.get_string('foreground-color'), 'rgb(208,207,204)',
         'defaults apply the GNOME dark text color');
 
     sync.stop();
@@ -267,10 +256,6 @@ function main() {
         'stopping the extension clears saved originals');
     check(settings.get_string('last-applied'), '{}',
         'stopping the extension clears last-applied state');
-
-    resetDconf(SETTINGS_PATH);
-    resetDconf(`${PROFILE_PATH_PREFIX}${TEST_UUID_1}/`);
-    resetDconf(`${PROFILE_PATH_PREFIX}${TEST_UUID_2}/`);
 
     if (failures > 0)
         throw new Error(`${failures} check(s) failed`);

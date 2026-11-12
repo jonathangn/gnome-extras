@@ -43,7 +43,7 @@
     </key>
 
     <key name="light-foreground" type="s">
-      <default>'rgb(30,30,30)'</default>
+      <default>'rgb(23,20,33)'</default>
       <summary>Light theme text color</summary>
       <description>
         Text color used when the system prefers a light theme. The default
@@ -52,7 +52,7 @@
     </key>
 
     <key name="dark-background" type="s">
-      <default>'rgb(30,30,30)'</default>
+      <default>'rgb(23,20,33)'</default>
       <summary>Dark theme background color</summary>
       <description>
         Background color used when the system prefers a dark theme. The
@@ -61,7 +61,7 @@
     </key>
 
     <key name="dark-foreground" type="s">
-      <default>'rgb(207,207,207)'</default>
+      <default>'rgb(208,207,204)'</default>
       <summary>Dark theme text color</summary>
       <description>
         Text color used when the system prefers a dark theme. The default
