@@ -154,10 +154,10 @@ export class TerminalThemeSync {
         }
 
         this._connections = [];
-        this._profiles.clear();
         this._started = false;
 
         this.restore();
+        this._profiles.clear();
     }
 
     /** Put back every color this extension changed. */
@@ -389,4 +389,14 @@ export class TerminalThemeSync {
     _jsonToVariant(key, value) {
         return jsonToVariant(key, value);
     }
+}
+
+/**
+ * Turn syncing off and restore the saved colors. Used by the preferences
+ * Restore button; disabling first prevents a later theme change from
+ * re-snapshotting already-synced colors as the originals.
+ */
+export function disableSyncAndRestore(settings, options = {}) {
+    settings.set_boolean('sync-enabled', false);
+    new TerminalThemeSync(settings, options).restore();
 }

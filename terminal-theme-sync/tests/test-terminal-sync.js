@@ -15,6 +15,7 @@ import {
     SETTINGS_SCHEMA_ID,
     LIGHT_PALETTE,
     isValidTerminalColor,
+    disableSyncAndRestore,
 } from '../terminalSync.js';
 
 const PROFILE_SCHEMA_ID = 'org.gnome.Terminal.Legacy.Profile';
@@ -138,6 +139,30 @@ function makeReadOnlyProfile() {
     };
 }
 
+function makeFlakyProfile() {
+    const palette = Array.from({length: 16}, (_, i) => `rgb(${i},${i},${i})`);
+    const values = {
+        'use-theme-colors': new GLib.Variant('b', false),
+        'background-color': new GLib.Variant('s', 'rgb(1,2,3)'),
+        'foreground-color': new GLib.Variant('s', 'rgb(4,5,6)'),
+        'palette': new GLib.Variant('as', palette),
+    };
+
+    return {
+        failBackgroundRestore: false,
+        get_value(key) {
+            return values[key];
+        },
+        set_value(key, variant) {
+            if (this.failBackgroundRestore && key === 'background-color')
+                return false;
+
+            values[key] = variant;
+            return true;
+        },
+    };
+}
+
 function originalColors(settings, uuid) {
     const state = JSON.parse(settings.get_string('original-colors'));
     return state[uuid];
@@ -163,8 +188,9 @@ function main() {
             [projectDir, 'metadata.json']))[1]));
     check(metadata.uuid, 'terminal-theme-sync@jonathangn.github.io',
         'metadata UUID uses the published namespace');
-    check(metadata.url, 'https://github.com/jonathangn/gnome-extras',
-        'metadata contains the project URL');
+    check(metadata.url,
+        'https://github.com/jonathangn/gnome-extras/tree/main/terminal-theme-sync',
+        'metadata URL points directly at the extension');
     check(metadata.shell_version ?? metadata['shell-version'],
         ['45', '46', '47', '48', '49', '50'],
         'metadata declares the supported shell versions');
@@ -313,6 +339,63 @@ function main() {
         'failed writes are not recorded as applied');
 
     readOnlySync.stop();
+
+    // A failed restore keeps the state so it can be retried.
+    const flaky = makeFlakyProfile();
+    const flakySync = new TerminalThemeSync(settings, {
+        interfaceSettings: fakeInterface,
+        profilesList: fakeProfiles,
+    });
+    flakySync._profiles.set(TEST_UUID_1, flaky);
+    flakySync.start();
+
+    flaky.failBackgroundRestore = true;
+    flakySync.restore();
+    check(originalColors(settings, TEST_UUID_1) !== undefined, true,
+        'a failed restore keeps the original snapshot');
+
+    flaky.failBackgroundRestore = false;
+    flakySync.restore();
+    check(settings.get_string('original-colors'), '{}',
+        'a later successful restore clears the state');
+    flakySync.stop();
+
+    // The preferences Restore action: disable syncing, restore, and make sure
+    // a later theme change cannot re-snapshot the synced colors as originals.
+    fakeInterface.value = 'prefer-dark';
+    settings.set_boolean('sync-enabled', true);
+    const prefsSync = new TerminalThemeSync(settings, {
+        interfaceSettings: fakeInterface,
+        profilesList: fakeProfiles,
+    });
+    prefsSync.start();
+    check(one.profile.get_string('background-color'), 'rgb(23,20,33)',
+        'restore test setup applies the dark background');
+
+    disableSyncAndRestore(settings, {
+        interfaceSettings: fakeInterface,
+        profilesList: fakeProfiles,
+    });
+    check(settings.get_boolean('sync-enabled'), false,
+        'restore turns syncing off');
+    check(one.profile.get_string('background-color'), 'rgb(1,2,3)',
+        'restore puts back the original background');
+    check(settings.get_string('original-colors'), '{}',
+        'restore clears the saved originals');
+
+    fakeInterface.value = 'prefer-light';
+    fakeInterface.emit();
+    check(one.profile.get_string('background-color'), 'rgb(1,2,3)',
+        'theme changes do nothing while syncing is off');
+
+    settings.set_boolean('sync-enabled', true);
+    prefsSync.apply();
+    check(one.profile.get_string('background-color'), 'rgb(255,255,255)',
+        're-enabling applies the current light scheme');
+    check(originalColors(settings, TEST_UUID_1)['background-color'], 'rgb(1,2,3)',
+        're-enabling snapshots the real original, not the synced colors');
+
+    prefsSync.stop();
 
     if (failures > 0)
         throw new Error(`${failures} check(s) failed`);

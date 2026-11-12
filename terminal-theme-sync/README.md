@@ -156,6 +156,19 @@ this extension is enabled, the profile colors it writes take precedence. When
 you disable it, your saved originals are restored and the installed terminal
 version's own behavior applies again.
 
+## Permissions
+
+The extension uses these GSettings schemas:
+
+- `org.gnome.desktop.interface` to read `color-scheme`.
+- `org.gnome.Terminal.ProfilesList` to find the profiles to manage.
+- `org.gnome.Terminal.Legacy.Profile` to read and write the profile colors.
+
+GNOME Terminal has no extension API, so writing these keys is the supported way
+to change terminal colors. GNOME Terminal watches the profile keys itself,
+which is also why open windows update immediately. The extension does not run
+external commands, read files, use the network, or touch any other schema.
+
 ## How it works
 
 GNOME Terminal stores per-profile settings in the

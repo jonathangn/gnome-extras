@@ -7,7 +7,7 @@ import Gtk from 'gi://Gtk';
 
 import {ExtensionPreferences} from 'resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js';
 
-import {TerminalThemeSync} from './terminalSync.js';
+import {disableSyncAndRestore} from './terminalSync.js';
 
 function addColorRow(group, settings, key, title) {
     const row = new Adw.ActionRow({title});
@@ -129,11 +129,7 @@ export default class TerminalThemeSyncPreferences extends ExtensionPreferences {
             valign: Gtk.Align.CENTER,
         });
         restoreButton.connect('clicked', () => {
-            // Turning syncing off first lets the live extension restore and
-            // clear its state. The explicit restore covers the case where the
-            // extension is installed but currently disabled.
-            settings.set_boolean('sync-enabled', false);
-            new TerminalThemeSync(settings).restore();
+            disableSyncAndRestore(settings);
         });
         restoreRow.add_suffix(restoreButton);
         restoreRow.activatable_widget = restoreButton;

@@ -21,6 +21,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   **GNOME dark** schemes.
 - Support for GNOME Shell 45–50.
 
+### Changed
+
+- Extension UUID is `terminal-theme-sync@jonathangn.github.io`.
+- `install.sh` removes an existing `terminal-theme-sync@jonathan` installation
+  when upgrading from the pre-release UUID.
+
 ### Fixed
 
 - Validate configured colors and fall back to the schema default when a value
