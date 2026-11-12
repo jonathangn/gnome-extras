@@ -20,3 +20,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Default colors match GNOME Terminal's built-in **GNOME light** and
   **GNOME dark** schemes.
 - Support for GNOME Shell 45–50.
+
+### Fixed
+
+- Validate configured colors and fall back to the schema default when a value
+  is invalid.
+- Do not record profile writes that failed (for example, keys locked by dconf
+  policy) as applied.
+- Keep restore state when a restore write fails, so it can be retried.
+- The preferences' *Restore* button now turns syncing off, preventing the next
+  theme change from saving already-synced colors as the originals.

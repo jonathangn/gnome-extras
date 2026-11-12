@@ -52,6 +52,23 @@ const WATCHED_SETTINGS = [
     'dark-foreground',
 ];
 
+const RGB_COLOR_PATTERN =
+    /^rgb\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*\)$/;
+const HEX_COLOR_PATTERN = /^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/;
+
+/** Whether a string is a color GNOME Terminal / GdkRGBA can parse. */
+export function isValidTerminalColor(value) {
+    if (typeof value !== 'string')
+        return false;
+
+    if (HEX_COLOR_PATTERN.test(value))
+        return true;
+
+    const match = RGB_COLOR_PATTERN.exec(value);
+    return match !== null &&
+        match.slice(1).every(component => Number(component) <= 255);
+}
+
 function schemaExists(schemaId) {
     return Gio.SettingsSchemaSource.get_default().lookup(schemaId, true) !== null;
 }
@@ -148,11 +165,15 @@ export class TerminalThemeSync {
         const originals = this._readJson('original-colors');
         const applied = this._readJson('last-applied');
 
-        for (const uuid of Object.keys(originals))
-            this._restoreProfile(uuid, originals, applied);
+        for (const uuid of Object.keys(originals)) {
+            if (this._restoreProfile(uuid, originals, applied)) {
+                delete originals[uuid];
+                delete applied[uuid];
+            }
+        }
 
-        this._writeJson('original-colors', {});
-        this._writeJson('last-applied', {});
+        this._writeJson('original-colors', originals);
+        this._writeJson('last-applied', applied);
     }
 
     /** Recompute and write the terminal colors for the current scheme. */
@@ -175,9 +196,10 @@ export class TerminalThemeSync {
             if (managed.has(uuid))
                 continue;
 
-            this._restoreProfile(uuid, originals, applied);
-            delete originals[uuid];
-            delete applied[uuid];
+            if (this._restoreProfile(uuid, originals, applied)) {
+                delete originals[uuid];
+                delete applied[uuid];
+            }
         }
 
         for (const uuid of Object.keys(originals)) {
@@ -186,8 +208,8 @@ export class TerminalThemeSync {
         }
 
         const dark = this._isDark();
-        const background = this._settings.get_string(dark ? 'dark-background' : 'light-background');
-        const foreground = this._settings.get_string(dark ? 'dark-foreground' : 'light-foreground');
+        const background = this._color(dark ? 'dark-background' : 'light-background');
+        const foreground = this._color(dark ? 'dark-foreground' : 'light-foreground');
         const syncPalette = this._settings.get_boolean('sync-palette');
         const palette = dark ? DARK_PALETTE : LIGHT_PALETTE;
 
@@ -205,12 +227,18 @@ export class TerminalThemeSync {
             // back rather than leaving the one we wrote.
             if (!syncPalette && applied[uuid].palette !== undefined) {
                 const ownPalette = this._jsonToVariant('palette', applied[uuid].palette);
-                if (variantsEqual(profile.get_value('palette'), ownPalette) &&
-                    originals[uuid].palette !== undefined) {
-                    profile.set_value('palette',
-                        this._jsonToVariant('palette', originals[uuid].palette));
+                if (originals[uuid].palette !== undefined &&
+                    variantsEqual(profile.get_value('palette'), ownPalette)) {
+                    const originalPalette =
+                        this._jsonToVariant('palette', originals[uuid].palette);
+                    // Keep claiming the palette if the restore failed, so the
+                    // next restore attempt can retry it.
+                    if (profile.set_value('palette', originalPalette))
+                        delete applied[uuid].palette;
+                } else {
+                    // The user (or another tool) already changed it.
+                    delete applied[uuid].palette;
                 }
-                delete applied[uuid].palette;
             }
 
             const values = {
@@ -224,8 +252,12 @@ export class TerminalThemeSync {
 
             for (const [key, value] of Object.entries(values)) {
                 const variant = this._jsonToVariant(key, value);
-                if (!variantsEqual(profile.get_value(key), variant))
-                    profile.set_value(key, variant);
+                if (!variantsEqual(profile.get_value(key), variant) &&
+                    !profile.set_value(key, variant)) {
+                    // Non-writable key (for example locked by dconf policy):
+                    // do not claim that this extension owns the value.
+                    continue;
+                }
 
                 applied[uuid][key] = value;
             }
@@ -253,6 +285,15 @@ export class TerminalThemeSync {
             return false;
 
         return this._interface.get_string('color-scheme') === 'prefer-dark';
+    }
+
+    /** Read a configured color, falling back to the schema default if invalid. */
+    _color(key) {
+        const value = this._settings.get_string(key);
+        if (isValidTerminalColor(value))
+            return value;
+
+        return this._settings.get_default_value(key).unpack();
     }
 
     _getProfile(uuid) {
@@ -294,15 +335,15 @@ export class TerminalThemeSync {
     _restoreProfile(uuid, originals, applied) {
         const original = originals[uuid];
         if (!original)
-            return;
+            return true;
 
         // A deleted profile should not be recreated in dconf.
         if (!this._profileExists(uuid))
-            return;
+            return true;
 
         const profile = this._getProfile(uuid);
         if (!profile)
-            return;
+            return true;
 
         const appliedValues = applied[uuid] ?? {};
 
@@ -317,8 +358,11 @@ export class TerminalThemeSync {
             if (!variantsEqual(current, this._jsonToVariant(key, appliedValues[key])))
                 continue;
 
-            profile.set_value(key, this._jsonToVariant(key, originalValue));
+            if (!profile.set_value(key, this._jsonToVariant(key, originalValue)))
+                return false;
         }
+
+        return true;
     }
 
     _connect(object, signal, callback) {

@@ -57,8 +57,9 @@ export default class TerminalThemeSyncPreferences extends ExtensionPreferences {
                 'show up in already open terminals as well as new ones. The ' +
                 'default colors match GNOME Terminal\'s built-in "GNOME light" ' +
                 'and "GNOME dark" schemes, so the Built-in schemes row shows ' +
-                'those names. Changing a color manually makes the row show ' +
-                '"Custom" again.',
+                'those names. While syncing is on, managed profiles are ' +
+                're-applied on every theme change, so manual color edits to ' +
+                'them are temporary.',
             wrap: true,
             xalign: 0,
             margin_start: 12,
@@ -119,14 +120,19 @@ export default class TerminalThemeSyncPreferences extends ExtensionPreferences {
 
         const restoreRow = new Adw.ActionRow({
             title: 'Restore original colors',
-            subtitle: 'Put back the terminal colors used before this extension ' +
-                'changed them. Disabling the extension does this automatically.',
+            subtitle: 'Turns syncing off and puts back the terminal colors used ' +
+                'before this extension changed them. Turn syncing back on to ' +
+                'resume following the system theme.',
         });
         const restoreButton = new Gtk.Button({
             label: 'Restore',
             valign: Gtk.Align.CENTER,
         });
         restoreButton.connect('clicked', () => {
+            // Turning syncing off first lets the live extension restore and
+            // clear its state. The explicit restore covers the case where the
+            // extension is installed but currently disabled.
+            settings.set_boolean('sync-enabled', false);
             new TerminalThemeSync(settings).restore();
         });
         restoreRow.add_suffix(restoreButton);

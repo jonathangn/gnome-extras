@@ -14,6 +14,7 @@ import {
     TerminalThemeSync,
     SETTINGS_SCHEMA_ID,
     LIGHT_PALETTE,
+    isValidTerminalColor,
 } from '../terminalSync.js';
 
 const PROFILE_SCHEMA_ID = 'org.gnome.Terminal.Legacy.Profile';
@@ -114,6 +115,29 @@ function makeProfile(uuid, background, foreground, useThemeColors) {
     return {profile, palette};
 }
 
+function makeReadOnlyProfile() {
+    const palette = Array.from({length: 16}, (_, i) => `rgb(${i},${i},${i})`);
+    const values = {
+        'use-theme-colors': new GLib.Variant('b', false),
+        'background-color': new GLib.Variant('s', 'rgb(1,2,3)'),
+        'foreground-color': new GLib.Variant('s', 'rgb(4,5,6)'),
+        'palette': new GLib.Variant('as', palette),
+    };
+
+    return {
+        get_value(key) {
+            return values[key];
+        },
+        set_value(key, variant) {
+            if (key === 'foreground-color')
+                return false;
+
+            values[key] = variant;
+            return true;
+        },
+    };
+}
+
 function originalColors(settings, uuid) {
     const state = JSON.parse(settings.get_string('original-colors'));
     return state[uuid];
@@ -144,6 +168,15 @@ function main() {
     check(metadata.shell_version ?? metadata['shell-version'],
         ['45', '46', '47', '48', '49', '50'],
         'metadata declares the supported shell versions');
+
+    check(isValidTerminalColor('rgb(1,2,3)'), true,
+        'rgb colors are accepted');
+    check(isValidTerminalColor('#1e1e1e'), true,
+        'hex colors are accepted');
+    check(isValidTerminalColor('rgb(256,0,0)'), false,
+        'out-of-range rgb components are rejected');
+    check(isValidTerminalColor('not-a-color'), false,
+        'arbitrary strings are rejected');
 
     settings.set_boolean('sync-enabled', true);
     settings.set_boolean('apply-to-all-profiles', false);
@@ -236,6 +269,12 @@ function main() {
     check(one.profile.get_string('foreground-color'), 'rgb(23,20,33)',
         'defaults apply the GNOME light text color');
 
+    settings.set_string('light-foreground', 'not-a-color');
+    sync.apply();
+    check(one.profile.get_string('foreground-color'), 'rgb(23,20,33)',
+        'invalid configured color falls back to the schema default');
+    settings.reset('light-foreground');
+
     fakeInterface.value = 'prefer-dark';
     fakeInterface.emit();
     check(one.profile.get_string('background-color'), 'rgb(23,20,33)',
@@ -256,6 +295,24 @@ function main() {
         'stopping the extension clears saved originals');
     check(settings.get_string('last-applied'), '{}',
         'stopping the extension clears last-applied state');
+
+    // A non-writable key must not be recorded as applied.
+    const readOnly = makeReadOnlyProfile();
+    const readOnlySync = new TerminalThemeSync(settings, {
+        interfaceSettings: fakeInterface,
+        profilesList: fakeProfiles,
+    });
+    readOnlySync._profiles.set(TEST_UUID_1, readOnly);
+    readOnlySync.start();
+
+    const appliedState =
+        JSON.parse(settings.get_string('last-applied'))[TEST_UUID_1] ?? {};
+    check(appliedState['background-color'], 'rgb(23,20,33)',
+        'successful writes are recorded as applied');
+    check('foreground-color' in appliedState, false,
+        'failed writes are not recorded as applied');
+
+    readOnlySync.stop();
 
     if (failures > 0)
         throw new Error(`${failures} check(s) failed`);

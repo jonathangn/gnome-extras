@@ -26,9 +26,11 @@ schemes* row displays those names while the extension is in charge.
 - Applies to the default profile only, or to every profile.
 - Pause switch and a "Restore original colors" button in the preferences.
 - Non-destructive: the values that were in use before the extension touched a
-  profile are remembered per profile and restored on disable. If you change a
-  color yourself while the extension is active, that change is not overwritten
-  when it restores.
+  profile are remembered per profile and restored on disable. Edits made by
+  hand while syncing was on are left alone by the restore step.
+- Managed profiles are re-applied on every theme change, so manual color edits
+  to them only last until the next theme change or extension restart. Turn
+  syncing off if you want to keep custom colors.
 - Gracefully does nothing if GNOME Terminal is not installed.
 
 ## Default colors
@@ -120,7 +122,7 @@ Options in the preferences:
 | **Apply to all profiles** | Manage every terminal profile instead of only the default one. |
 | **Also switch the 16-color palette** | Replace the ANSI palette too. Off by default. |
 | **Light/Dark background and text** | Pick the colors used for each scheme. The defaults are the GNOME built-in schemes. |
-| **Restore original colors** | Manually put back the pre-extension colors. |
+| **Restore original colors** | Turns syncing off and puts back the pre-extension colors. Turn syncing back on afterwards to resume. |
 | **Reset colors to defaults** | Restore the GNOME light/dark color pairs. |
 
 Switch the desktop theme from GNOME Settings → Appearance, or with:
@@ -136,12 +138,23 @@ If you edit the **Built-in schemes** row in GNOME Terminal's profile
 preferences while the extension is active, GNOME Terminal writes a different
 foreground/background pair and the extension no longer recognizes the colors.
 The next theme change (or extension restart) writes the configured colors
-again. Use the extension preferences if you want to keep custom colors.
+again.
+
+While syncing is on, the extension owns the profile's background color, text
+color, `use-theme-colors` setting, and (when enabled) its 16-color palette.
+Manual edits to those values are temporary and are overwritten on the next
+theme change or extension restart. Turn **Sync terminal colors** off first if
+you want to edit and keep custom colors.
 
 GNOME Terminal's own **Theme variant** setting (*Follow system style* /
 *Light style* / *Dark style*) only changes the window chrome and preferences
 styling. It does not change the terminal background or text colors; that is
 what this extension manages.
+
+Newer GNOME Terminal releases may add their own color-scheme handling. While
+this extension is enabled, the profile colors it writes take precedence. When
+you disable it, your saved originals are restored and the installed terminal
+version's own behavior applies again.
 
 ## How it works
 
