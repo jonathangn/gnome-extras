@@ -12,7 +12,7 @@ scheme. The default colors match GNOME Terminal's built-in **GNOME light**
 and **GNOME dark** schemes, changes apply to already open terminals, and the
 original profile colors are restored when the extension is disabled.
 
-- GNOME Shell 45–50
+- GNOME Shell 50
 - GNOME Terminal 3.44+
 - GPL-2.0-or-later
 
