@@ -397,6 +397,44 @@ function main() {
 
     prefsSync.stop();
 
+    // Direct test of disableSyncAndRestore's manual path, used when the
+    // extension is installed but not running.
+    settings.set_boolean('sync-enabled', true);
+    one.profile.set_boolean('use-theme-colors', false);
+    one.profile.set_string('background-color', 'rgb(20,20,20)');
+    one.profile.set_string('foreground-color', 'rgb(230,230,230)');
+    settings.set_string('original-colors', JSON.stringify({
+        [TEST_UUID_1]: {
+            'use-theme-colors': true,
+            'background-color': 'rgb(1,2,3)',
+            'foreground-color': 'rgb(4,5,6)',
+            'palette': one.palette,
+        },
+    }));
+    settings.set_string('last-applied', JSON.stringify({
+        [TEST_UUID_1]: {
+            'use-theme-colors': false,
+            'background-color': 'rgb(20,20,20)',
+            'foreground-color': 'rgb(230,230,230)',
+        },
+    }));
+
+    disableSyncAndRestore(settings, {
+        interfaceSettings: fakeInterface,
+        profilesList: fakeProfiles,
+    });
+
+    check(settings.get_boolean('sync-enabled'), false,
+        'disableSyncAndRestore turns syncing off without a live instance');
+    check(one.profile.get_string('background-color'), 'rgb(1,2,3)',
+        'disableSyncAndRestore restores originals without a live instance');
+    check(one.profile.get_string('foreground-color'), 'rgb(4,5,6)',
+        'disableSyncAndRestore restores text without a live instance');
+    check(one.profile.get_boolean('use-theme-colors'), true,
+        'disableSyncAndRestore restores theme-colors without a live instance');
+    check(settings.get_string('original-colors'), '{}',
+        'disableSyncAndRestore clears state without a live instance');
+
     if (failures > 0)
         throw new Error(`${failures} check(s) failed`);
 
