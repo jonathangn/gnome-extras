@@ -52,22 +52,16 @@ export default class TerminalThemeSyncPreferences extends ExtensionPreferences {
         });
         window.add(page);
 
-        const info = new Gtk.Label({
-            label: 'Changes are written to GNOME Terminal\'s color profiles and ' +
-                'show up in already open terminals as well as new ones. The ' +
+        const introGroup = new Adw.PreferencesGroup({
+            description: 'Changes are written to GNOME Terminal\'s color profiles ' +
+                'and show up in already open terminals as well as new ones. The ' +
                 'default colors match GNOME Terminal\'s built-in "GNOME light" ' +
                 'and "GNOME dark" schemes, so the Built-in schemes row shows ' +
                 'those names. While syncing is on, managed profiles are ' +
                 're-applied on every theme change, so manual color edits to ' +
                 'them are temporary.',
-            wrap: true,
-            xalign: 0,
-            margin_start: 12,
-            margin_end: 12,
-            margin_bottom: 6,
         });
-        info.add_css_class('dim-label');
-        page.add(info);
+        page.add(introGroup);
 
         const behaviourGroup = new Adw.PreferencesGroup({title: 'Behaviour'});
         page.add(behaviourGroup);

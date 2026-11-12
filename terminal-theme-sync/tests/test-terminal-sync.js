@@ -199,6 +199,24 @@ function main() {
         ['50'],
         'metadata declares the supported shell versions');
 
+    // Adw.PreferencesPage.add() only accepts Adw.PreferencesGroup. prefs.js
+    // cannot be imported outside GNOME Shell, so check the page additions
+    // statically instead: every `page.add(x)` must be a group variable.
+    const prefsSource = new TextDecoder().decode(
+        GLib.file_get_contents(GLib.build_filenamev(
+            [projectDir, 'prefs.js']))[1]);
+    const groupVars = new Set(
+        [...prefsSource.matchAll(
+            /(?:const|let)\s+(\w+)\s*=\s*new\s+Adw\.PreferencesGroup\b/g)]
+            .map(match => match[1]));
+    const pageAdds = [...prefsSource.matchAll(/page\.add\(\s*(\w+)\s*\)/g)]
+        .map(match => match[1]);
+    const pageAddCalls = [...prefsSource.matchAll(/page\.add\(/g)].length;
+    check(pageAddCalls > 0 &&
+        pageAdds.length === pageAddCalls &&
+        pageAdds.every(name => groupVars.has(name)),
+        true, 'preferences page only holds Adw.PreferencesGroup children');
+
     check(isValidTerminalColor('rgb(1,2,3)'), true,
         'rgb colors are accepted');
     check(isValidTerminalColor('#1e1e1e'), true,
