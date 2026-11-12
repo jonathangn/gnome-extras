@@ -3,6 +3,10 @@
 Personal collection of GNOME Shell extensions by
 [Jonathan G Nieto](https://github.com/jonathangn).
 
+Each extension lives in its own folder with its own `metadata.json`, build
+scripts and tests. Run `make` at the repository root to build and test every
+extension, or `make -C <extension-folder> check test pack` for one of them.
+
 ## Extensions
 
 ### [Terminal Theme Sync](terminal-theme-sync/)

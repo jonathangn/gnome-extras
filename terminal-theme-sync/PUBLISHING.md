@@ -61,9 +61,12 @@ in `terminal-theme-sync/.gitignore`.
 From the repository root:
 
 ```bash
-git tag -a v1.0.0 -m "Terminal Theme Sync 1.0.0"
-git push origin v1.0.0
+git tag -a terminal-theme-sync-v1.0.0 -m "Terminal Theme Sync 1.0.0"
+git push origin terminal-theme-sync-v1.0.0
 ```
+
+Tags are prefixed with the extension folder name, so a second extension in this
+repository can version and release independently (`<extension>-vX.Y.Z`).
 
 On GitHub, create a release from the tag and attach:
 
@@ -108,7 +111,8 @@ reasons for rejection to avoid:
    integer version of each upload itself.
 2. Add an entry to `terminal-theme-sync/CHANGELOG.md`.
 3. Run `make -C terminal-theme-sync check test pack`.
-4. Tag the release (`v1.0.1`, …), attach the new zip to the GitHub release.
+4. Tag the release (`terminal-theme-sync-v1.0.1`, …), attach the new zip to the
+   GitHub release.
 5. Upload the new zip on EGO. EGO numbers each upload itself, so no manual
    `version` bump is needed.
 
