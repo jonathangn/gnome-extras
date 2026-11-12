@@ -27,7 +27,7 @@ Check that `metadata.json` has:
 
 - `uuid` `terminal-theme-sync@jonathangn.github.io`
 - a valid `url`
-- the `shell-version` values you actually support (currently 45–50)
+- the `shell-version` values you actually support (currently 50)
 
 EGO requires the UUID to look like an email address in a namespace you own.
 Keep it stable after the first submission.

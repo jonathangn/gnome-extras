@@ -5,7 +5,7 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.0.0] - 2026-11-11
+## [1.0.0] - 2026-11-12
 
 ### Added
 
@@ -19,7 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   and reset.
 - Default colors match GNOME Terminal's built-in **GNOME light** and
   **GNOME dark** schemes.
-- Support for GNOME Shell 45–50.
+- Support for GNOME Shell 50.
 
 ### Changed
 
@@ -36,3 +36,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Keep restore state when a restore write fails, so it can be retried.
 - The preferences' *Restore* button now turns syncing off, preventing the next
   theme change from saving already-synced colors as the originals.
+- Default light and dark colors now match GNOME Terminal 3.58's built-in
+  schemes exactly.

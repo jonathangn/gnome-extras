@@ -2,7 +2,7 @@
   "uuid": "terminal-theme-sync@jonathangn.github.io",
   "name": "Terminal Theme Sync",
   "description": "Keeps GNOME Terminal's colors in sync with the system light/dark color scheme.\n\nSwitches background, text and (optionally) the 16-color palette of your terminal profiles when the desktop theme changes, applies the change to already open terminals, and restores your original colors when the extension is disabled. The default colors match GNOME Terminal's built-in \"GNOME light\" and \"GNOME dark\" schemes.",
-  "shell-version": ["45", "46", "47", "48", "49", "50"],
+  "shell-version": ["50"],
   "settings-schema": "org.gnome.shell.extensions.terminal-theme-sync",
   "url": "https://github.com/jonathangn/gnome-extras/tree/main/terminal-theme-sync",
   "version": 1,

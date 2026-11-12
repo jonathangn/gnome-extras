@@ -55,7 +55,7 @@ the *Built-in schemes* row says GNOME light/dark. Turn on *Also switch the
 
 ## Requirements
 
-- GNOME Shell 45–50 (tested on GNOME Shell 50.1).
+- GNOME Shell 50 (tested on GNOME Shell 50.1).
 - GNOME Terminal 3.44 or newer, with the
   `org.gnome.Terminal.Legacy.Profile` GSettings schema (tested with
   GNOME Terminal 3.58.0 / VTE 0.84.0 on Ubuntu).

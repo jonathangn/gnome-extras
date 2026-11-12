@@ -191,8 +191,10 @@ function main() {
     check(metadata.url,
         'https://github.com/jonathangn/gnome-extras/tree/main/terminal-theme-sync',
         'metadata URL points directly at the extension');
+    // Only list shell versions that have actually been tested; EGO rejects
+    // untested claims, so widen this deliberately when a new release is tested.
     check(metadata.shell_version ?? metadata['shell-version'],
-        ['45', '46', '47', '48', '49', '50'],
+        ['50'],
         'metadata declares the supported shell versions');
 
     check(isValidTerminalColor('rgb(1,2,3)'), true,
