@@ -372,6 +372,15 @@ function main() {
     check(one.profile.get_string('background-color'), 'rgb(23,20,33)',
         'restore test setup applies the dark background');
 
+    // Count apply() calls so the test proves the live instance handles the
+    // theme change after Restore, rather than just relying on the profile.
+    let liveApplyCalls = 0;
+    const liveApply = prefsSync.apply.bind(prefsSync);
+    prefsSync.apply = () => {
+        liveApplyCalls++;
+        return liveApply();
+    };
+
     disableSyncAndRestore(settings, {
         interfaceSettings: fakeInterface,
         profilesList: fakeProfiles,
@@ -383,10 +392,17 @@ function main() {
     check(settings.get_string('original-colors'), '{}',
         'restore clears the saved originals');
 
+    liveApplyCalls = 0;
     fakeInterface.value = 'prefer-light';
     fakeInterface.emit();
+    check(liveApplyCalls, 1,
+        'live instance handles the theme change after Restore');
     check(one.profile.get_string('background-color'), 'rgb(1,2,3)',
-        'theme changes do nothing while syncing is off');
+        'live instance does not re-apply colors after Restore');
+    check(settings.get_string('original-colors'), '{}',
+        'live instance does not re-snapshot after Restore');
+    check(settings.get_string('last-applied'), '{}',
+        'live instance does not record applied colors after Restore');
 
     settings.set_boolean('sync-enabled', true);
     prefsSync.apply();
