@@ -191,6 +191,8 @@ function main() {
     check(metadata.url,
         'https://github.com/jonathangn/gnome-extras/tree/main/terminal-theme-sync',
         'metadata URL points directly at the extension');
+    check('version' in metadata, false,
+        'metadata leaves the integer version to EGO');
     // Only list shell versions that have actually been tested; EGO rejects
     // untested claims, so widen this deliberately when a new release is tested.
     check(metadata.shell_version ?? metadata['shell-version'],

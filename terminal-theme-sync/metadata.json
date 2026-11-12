@@ -5,6 +5,5 @@
   "shell-version": ["50"],
   "settings-schema": "org.gnome.shell.extensions.terminal-theme-sync",
   "url": "https://github.com/jonathangn/gnome-extras/tree/main/terminal-theme-sync",
-  "version": 1,
   "version-name": "1.0.0"
 }

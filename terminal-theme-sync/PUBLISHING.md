@@ -103,13 +103,14 @@ reasons for rejection to avoid:
 
 ## 5. Publishing updates
 
-1. Bump `version` (integer) and `version-name` (human-readable string) in
-   `terminal-theme-sync/metadata.json`.
+1. Bump `version-name` (human-readable string) in
+   `terminal-theme-sync/metadata.json`. Do not add `version`; EGO assigns the
+   integer version of each upload itself.
 2. Add an entry to `terminal-theme-sync/CHANGELOG.md`.
 3. Run `make -C terminal-theme-sync check test pack`.
 4. Tag the release (`v1.0.1`, …), attach the new zip to the GitHub release.
-5. Upload the new zip on EGO. EGO requires each upload to have a higher
-   `version` than the previous one.
+5. Upload the new zip on EGO. EGO numbers each upload itself, so no manual
+   `version` bump is needed.
 
 ## 6. Installing without EGO
 
